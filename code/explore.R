@@ -18,15 +18,19 @@ n %v% "ebCommunity" = as.integer(igraph::membership(communities))
 vCols = RColorBrewer::brewer.pal(max(n %v% "ebCommunity"), "Accent")  # Nice colors for plot
 vCols = vCols[n %v% "ebCommunity"]
 
+png("results/netPlot.png", height = 800, width = 800)
 plot(n
      , displaylabels = TRUE
      , vertex.col = vCols
      # , vertex.cex = log(degree(n, cmode = "indegree") + 1) + .5
      , vertex.cex = ((n %v% "bmi.percentile")^-1 * 25)^-1
-     , label.cex = .7
+     , label.cex = 1.2
+     , label.pos = 6
      , vertex.sides = c(4, 50)[as.factor(n %v% "Ethnicity")]
+     , main = "Nodes are colored by edge-betweenness community membership.\nShape reflects ethnicity and size BMI percentile"
 )
-mtext("Color by endogenous community detected. Shape by ethnicity. Size by BMI percentile")
+dev.off()
+
 # Looking at this, I think perhaps we want differential homophily in communities 1 and 2 and none elsewhere.
 # Implement this in model 18.
 # Or, make everyone not in 1 or 2 in a 3rd community and have uniform homophily across all three.
@@ -478,7 +482,7 @@ m21.4 = ergm(n ~ edges + mutual +
                absdiff("T1Age"))
 stargazer(m21, m21.1, m21.2, m21.3, m21.4, type = "text")
 # m21.4 is winner. Main effect of age and age-homophily beyond the community structure.
-# AHA! And there was masking: Revealed a weight-status-homophily effect!
+# AHA! And there was masking: Revealed a weight-status homophily effect!
 # Let's make sure we can't have a weight main effect in there too.
 
 m21.5 = ergm(n ~ edges + mutual + 
@@ -493,17 +497,37 @@ m21.5 = ergm(n ~ edges + mutual +
                absdiff("T1Age"))
 # nope, we can't.
 
+# What about these camp activity teams?
+m21.6 = ergm(n ~ edges + mutual + 
+               gwidegree(.5, fixed = TRUE) + 
+               gwodegree(.5, fixed = TRUE) + 
+               gwesp(.5, fixed = TRUE) +
+               nodematch("Ethnicity", diff = FALSE) + 
+               nodematch("ebCommunity", diff = FALSE, keep = 1:2) +
+               nodematch("weight.status.2", diff = TRUE) +
+               nodecov("T1Age") + 
+               absdiff("T1Age") +
+               nodematch("team", diff = FALSE))
 
+m21.7 = ergm(n ~ edges + mutual + 
+               gwidegree(.5, fixed = TRUE) + 
+               gwodegree(.5, fixed = TRUE) + 
+               gwesp(.5, fixed = TRUE) +
+               nodematch("Ethnicity", diff = FALSE) + 
+               # nodematch("ebCommunity", diff = FALSE, keep = 1:2) +
+               nodematch("weight.status.2", diff = TRUE) +
+               nodecov("T1Age") + 
+               absdiff("T1Age") +
+               nodematch("team", diff = TRUE, keep = 2:4))
+summary(n ~ nodematch("team", diff = TRUE))  # No ties in team=3 so exclude that
+# from the differential team-homophily estimate. This is unfortunate beacuse we'd 
+# like to keep that negative effect but fixing it to -Inf is harsh and wrecks xIC.
+# Anyway, overspecified with differential homophily for the other three teams.
+# Tried it without endo communities; still over-specd. So, stick with one
+# team-homophily effect (m21.6).
+stargazer(m21.4, m21.7, m21.6, type = "text")
 
-
-
-
-
-# You are here. Haven't added exercise and dietary habits with age effect yet.
-############################################################################
-############################################################################
-############################################################################
-
+# Add exercise and dietary habits
 summary(n %v% "TotalPAChange")  # Wow -- that's some variance! Nice.
 
 m30 = ergm(n ~ edges + mutual + 
@@ -511,17 +535,412 @@ m30 = ergm(n ~ edges + mutual +
              gwodegree(.5, fixed = TRUE) + 
              gwesp(.5, fixed = TRUE) +
              nodematch("Ethnicity", diff = FALSE) + 
-             nodematch("ebCommunity", diff = FALSE, keep = 1:2) + 
+             nodematch("ebCommunity", diff = FALSE, keep = 1:2) +
              nodematch("weight.status.2", diff = TRUE) +
+             nodecov("T1Age") + 
+             absdiff("T1Age") +
+             nodematch("team", diff = FALSE) +
              nodecov("TotalPAChange"))
-stargazer(m21, m30, type = "text")  # Maybe those adding more exercising form more friendships, but it's highly uncertain
 
 m31 = ergm(n ~ edges + mutual + 
              gwidegree(.5, fixed = TRUE) + 
              gwodegree(.5, fixed = TRUE) + 
              gwesp(.5, fixed = TRUE) +
              nodematch("Ethnicity", diff = FALSE) + 
-             nodematch("ebCommunity", diff = FALSE, keep = 1:2) + 
+             nodematch("ebCommunity", diff = FALSE, keep = 1:2) +
              nodematch("weight.status.2", diff = TRUE) +
+             nodecov("T1Age") + 
+             absdiff("T1Age") +
+             nodematch("team", diff = FALSE) +
              nodecov("TotalPA2"))
-stargazer(m21, m30, m31, type = "text")
+
+m32 = ergm(n ~ edges + mutual + 
+                gwidegree(.5, fixed = TRUE) + 
+                gwodegree(.5, fixed = TRUE) + 
+                gwesp(.5, fixed = TRUE) +
+                nodematch("Ethnicity", diff = FALSE) + 
+                nodematch("ebCommunity", diff = FALSE, keep = 1:2) +
+                nodematch("weight.status.2", diff = TRUE) +
+                nodecov("T1Age") + 
+                absdiff("T1Age") +
+             nodematch("team", diff = FALSE) +
+             nodecov("MVPA2"))
+
+m33 = ergm(n ~ edges + mutual + 
+             gwidegree(.5, fixed = TRUE) + 
+             gwodegree(.5, fixed = TRUE) + 
+             gwesp(.5, fixed = TRUE) +
+             nodematch("Ethnicity", diff = FALSE) + 
+             nodematch("ebCommunity", diff = FALSE, keep = 1:2) +
+             nodematch("weight.status.2", diff = TRUE) +
+             nodecov("T1Age") + 
+             absdiff("T1Age") +
+             nodematch("team", diff = FALSE) +
+             nodecov("TotalPA1"))
+
+m34 = ergm(n ~ edges + mutual + 
+             gwidegree(.5, fixed = TRUE) + 
+             gwodegree(.5, fixed = TRUE) + 
+             gwesp(.5, fixed = TRUE) +
+             nodematch("Ethnicity", diff = FALSE) + 
+             nodematch("ebCommunity", diff = FALSE, keep = 1:2) +
+             nodematch("weight.status.2", diff = TRUE) +
+             nodecov("T1Age") + 
+             absdiff("T1Age") +
+             nodematch("team", diff = FALSE) +
+             nodecov("TotalPA1") +
+             nodecov("TotalPAChange"))
+
+stargazer(m21.4, m21.6, m30, m31, m32, m33, m34, type = "text")
+# Total exercise, vigerous exercise, and change in exercise don't seem to matter much as main effects.
+# What about homophily?
+
+m30.1 = ergm(n ~ edges + mutual + 
+             gwidegree(.5, fixed = TRUE) + 
+             gwodegree(.5, fixed = TRUE) + 
+             gwesp(.5, fixed = TRUE) +
+             nodematch("Ethnicity", diff = FALSE) + 
+             nodematch("ebCommunity", diff = FALSE, keep = 1:2) +
+             nodematch("weight.status.2", diff = TRUE) +
+             nodecov("T1Age") + 
+             absdiff("T1Age") +
+             nodematch("team", diff = FALSE) +
+             absdiff("TotalPAChange"))
+
+m31.1 = ergm(n ~ edges + mutual + 
+             gwidegree(.5, fixed = TRUE) + 
+             gwodegree(.5, fixed = TRUE) + 
+             gwesp(.5, fixed = TRUE) +
+             nodematch("Ethnicity", diff = FALSE) + 
+             nodematch("ebCommunity", diff = FALSE, keep = 1:2) +
+             nodematch("weight.status.2", diff = TRUE) +
+             nodecov("T1Age") + 
+             absdiff("T1Age") +
+             nodematch("team", diff = FALSE) +
+             absdiff("TotalPA2"))
+
+m32.1 = ergm(n ~ edges + mutual + 
+             gwidegree(.5, fixed = TRUE) + 
+             gwodegree(.5, fixed = TRUE) + 
+             gwesp(.5, fixed = TRUE) +
+             nodematch("Ethnicity", diff = FALSE) + 
+             nodematch("ebCommunity", diff = FALSE, keep = 1:2) +
+             nodematch("weight.status.2", diff = TRUE) +
+             nodecov("T1Age") + 
+             absdiff("T1Age") +
+             nodematch("team", diff = FALSE) +
+             absdiff("MVPA2"))
+
+m33.1 = ergm(n ~ edges + mutual + 
+             gwidegree(.5, fixed = TRUE) + 
+             gwodegree(.5, fixed = TRUE) + 
+             gwesp(.5, fixed = TRUE) +
+             nodematch("Ethnicity", diff = FALSE) + 
+             nodematch("ebCommunity", diff = FALSE, keep = 1:2) +
+             nodematch("weight.status.2", diff = TRUE) +
+             nodecov("T1Age") + 
+             absdiff("T1Age") +
+             nodematch("team", diff = FALSE) +
+             absdiff("TotalPA1"))
+
+m34.1 = ergm(n ~ edges + mutual + 
+             gwidegree(.5, fixed = TRUE) + 
+             gwodegree(.5, fixed = TRUE) + 
+             gwesp(.5, fixed = TRUE) +
+             nodematch("Ethnicity", diff = FALSE) + 
+             nodematch("ebCommunity", diff = FALSE, keep = 1:2) +
+             nodematch("weight.status.2", diff = TRUE) +
+             nodecov("T1Age") + 
+             absdiff("T1Age") +
+             nodematch("team", diff = FALSE) +
+             absdiff("TotalPA1") +
+             absdiff("TotalPAChange"))
+
+stargazer(m30, m31, m32, m33, m34, m30.1, m31.1, m32.1, m33.1, m34.1, type = "text")
+# No homophily there; tiny effects are just main effects recast. Just to be extra sure:
+
+m35 = ergm(n ~ edges + mutual + 
+               gwidegree(.5, fixed = TRUE) + 
+               gwodegree(.5, fixed = TRUE) + 
+               gwesp(.5, fixed = TRUE) +
+               nodematch("Ethnicity", diff = FALSE) + 
+               nodematch("ebCommunity", diff = FALSE, keep = 1:2) +
+               nodematch("weight.status.2", diff = TRUE) +
+               nodecov("T1Age") + 
+               absdiff("T1Age") +
+               nodematch("team", diff = FALSE) +
+               nodecov("MVPA2") +
+               absdiff("MVPA2"))
+summary(m35)  # Nothing there.
+
+# What about diet?
+dev.off()
+par(mfrow = c(2, 2))
+plot(n %v% "fvservt1", n %v% "usservt1")
+plot(n %v% "fvservt2", n %v% "usservt2")
+plot(n %v% "fvservt1", n %v% "fvservt2")
+plot(n %v% "FVChange", n %v% "USChange")
+
+# That outlier who was eating 12 unhealthy snacks a day at t1 might need to be dealt with, that point has a lot of leverage
+m36 = ergm(n ~ edges + mutual + 
+             gwidegree(.5, fixed = TRUE) + 
+             gwodegree(.5, fixed = TRUE) + 
+             gwesp(.5, fixed = TRUE) +
+             nodematch("Ethnicity", diff = FALSE) + 
+             nodematch("ebCommunity", diff = FALSE, keep = 1:2) +
+             nodematch("weight.status.2", diff = TRUE) +
+             nodecov("T1Age") + 
+             absdiff("T1Age") +
+             nodematch("team", diff = FALSE) +
+             nodecov("usservt1")
+)
+
+m37 = ergm(n ~ edges + mutual + 
+             gwidegree(.5, fixed = TRUE) + 
+             gwodegree(.5, fixed = TRUE) + 
+             gwesp(.5, fixed = TRUE) +
+             nodematch("Ethnicity", diff = FALSE) + 
+             nodematch("ebCommunity", diff = FALSE, keep = 1:2) +
+             nodematch("weight.status.2", diff = TRUE) +
+             nodecov("T1Age") + 
+             absdiff("T1Age") +
+             nodematch("team", diff = FALSE) +
+             nodecov("fvservt1")
+)
+
+m38 = ergm(n ~ edges + mutual + 
+             gwidegree(.5, fixed = TRUE) + 
+             gwodegree(.5, fixed = TRUE) + 
+             gwesp(.5, fixed = TRUE) +
+             nodematch("Ethnicity", diff = FALSE) + 
+             nodematch("ebCommunity", diff = FALSE, keep = 1:2) +
+             nodematch("weight.status.2", diff = TRUE) +
+             nodecov("T1Age") + 
+             absdiff("T1Age") +
+             nodematch("team", diff = FALSE) +
+             nodecov("fvservt1") +
+             nodecov("usservt1")
+)
+
+stargazer(m21.6, m36, m37, m38, type = "text")
+# Maybe a little evidence for unhealthy eaters being a little more popular, but unclear
+# Homophily in eating?
+
+m39 = ergm(n ~ edges + mutual + 
+             gwidegree(.5, fixed = TRUE) + 
+             gwodegree(.5, fixed = TRUE) + 
+             gwesp(.5, fixed = TRUE) +
+             nodematch("Ethnicity", diff = FALSE) + 
+             nodematch("ebCommunity", diff = FALSE, keep = 1:2) +
+             nodematch("weight.status.2", diff = TRUE) +
+             nodecov("T1Age") + 
+             absdiff("T1Age") +
+             nodematch("team", diff = FALSE) +
+             nodecov("usservt1") +
+             absdiff("usservt1")
+)
+stargazer(m36, m39, type = "text")
+# Hmm, minor evidence for homophily in unhealthy snacks.
+
+m40 = ergm(n ~ edges + mutual + 
+             gwidegree(.5, fixed = TRUE) + 
+             gwodegree(.5, fixed = TRUE) + 
+             gwesp(.5, fixed = TRUE) +
+             nodematch("Ethnicity", diff = FALSE) + 
+             nodematch("ebCommunity", diff = FALSE, keep = 1:2) +
+             nodematch("weight.status.2", diff = TRUE) +
+             nodecov("T1Age") + 
+             absdiff("T1Age") +
+             nodematch("team", diff = FALSE) +
+             nodecov("fvservt1") +
+             absdiff("fvservt1") +
+             nodecov("usservt1") +
+             absdiff("usservt1")
+)
+stargazer(m36, m39, m40, type = "text")
+# Similar story for healthy snacks, weaker but with similar (im)precision
+# What if we combined them and called it the net healthy snack score?
+
+n %v% "netSnackT1" = n %v% "fvservt1" - n %v% "usservt1"
+
+m41 = ergm(n ~ edges + mutual + 
+       gwidegree(.5, fixed = TRUE) + 
+       gwodegree(.5, fixed = TRUE) + 
+       gwesp(.5, fixed = TRUE) +
+       nodematch("Ethnicity", diff = FALSE) + 
+       nodematch("ebCommunity", diff = FALSE, keep = 1:2) +
+       nodematch("weight.status.2", diff = TRUE) +
+       nodecov("T1Age") + 
+       absdiff("T1Age") +
+       nodematch("team", diff = FALSE) +
+       nodecov("netSnackT1") +
+       absdiff("netSnackT1")
+)
+stargazer(m21.6, m41, type = "text")
+summary(m41)
+# Similar story, prefered by xIC, but effect is still imprecise. May just be noisy effect.
+
+# What about dietary change?
+m42 = ergm(n ~ edges + mutual + 
+             gwidegree(.5, fixed = TRUE) + 
+             gwodegree(.5, fixed = TRUE) + 
+             gwesp(.5, fixed = TRUE) +
+             nodematch("Ethnicity", diff = FALSE) + 
+             nodematch("ebCommunity", diff = FALSE, keep = 1:2) +
+             nodematch("weight.status.2", diff = TRUE) +
+             nodecov("T1Age") + 
+             absdiff("T1Age") +
+             nodematch("team", diff = FALSE) +
+             nodecov("netSnackT1") +
+             absdiff("netSnackT1") +
+             nodecov("USChange") +
+             absdiff("USChange")
+)
+stargazer(m41, m42, type = "text")
+# Interesting: Adding change in diet during camp clarified the homophily of dietary 
+# choices and overweight-homophily effects (but both only slightly). Can we use just
+# unhealthy snacks instead of my created variable?
+
+m43 = ergm(n ~ edges + mutual + 
+             gwidegree(.5, fixed = TRUE) + 
+             gwodegree(.5, fixed = TRUE) + 
+             gwesp(.5, fixed = TRUE) +
+             nodematch("Ethnicity", diff = FALSE) + 
+             nodematch("ebCommunity", diff = FALSE, keep = 1:2) +
+             nodematch("weight.status.2", diff = TRUE) +
+             nodecov("T1Age") + 
+             absdiff("T1Age") +
+             nodematch("team", diff = FALSE) +
+             nodecov("usservt1") +
+             absdiff("usservt1") +
+             nodecov("USChange") +
+             absdiff("USChange")
+)
+stargazer(m41, m42, m43, type = "text")
+# It doesn't work as well. So, what about constructing a net-change statistic?
+n %v% "netSnackT2" = n %v% "fvservt2" - n %v% "usservt2"
+n %v% "netSnackChange" = n %v% "netSnackT2" - n %v% "netSnackT1"
+
+m44 = ergm(n ~ edges + mutual + 
+                gwidegree(.5, fixed = TRUE) + 
+                gwodegree(.5, fixed = TRUE) + 
+                gwesp(.5, fixed = TRUE) +
+                nodematch("Ethnicity", diff = FALSE) + 
+                nodematch("ebCommunity", diff = FALSE, keep = 1:2) +
+                nodematch("weight.status.2", diff = TRUE) +
+                nodecov("T1Age") + 
+                absdiff("T1Age") +
+                nodematch("team", diff = FALSE) +
+                nodecov("netSnackT1") +
+                absdiff("netSnackT1") +
+                nodecov("netSnackChange") +
+                absdiff("netSnackChange")
+)
+
+m45 = ergm(n ~ edges + mutual + 
+             gwidegree(.5, fixed = TRUE) + 
+             gwodegree(.5, fixed = TRUE) + 
+             gwesp(.5, fixed = TRUE) +
+             nodematch("Ethnicity", diff = FALSE) + 
+             nodematch("ebCommunity", diff = FALSE, keep = 1:2) +
+             nodematch("weight.status.2", diff = TRUE) +
+             nodecov("T1Age") + 
+             absdiff("T1Age") +
+             nodematch("team", diff = FALSE) +
+             nodecov("netSnackChange") +
+             absdiff("netSnackChange")
+)
+stargazer(m21.6, m39, m41, m42, m43, m44, m45, type = "text")
+
+# Let's try adding physical activity back in on top of that:
+m46 = ergm(n ~ edges + mutual + 
+             gwidegree(.5, fixed = TRUE) + 
+             gwodegree(.5, fixed = TRUE) + 
+             gwesp(.5, fixed = TRUE) +
+             nodematch("Ethnicity", diff = FALSE) + 
+             nodematch("ebCommunity", diff = FALSE, keep = 1:2) +
+             nodematch("weight.status.2", diff = TRUE) +
+             nodecov("T1Age") + 
+             absdiff("T1Age") +
+             nodematch("team", diff = FALSE) +
+             nodecov("netSnackChange") +
+             absdiff("netSnackChange") +
+             nodecov("MVPA2") +
+             absdiff("MVPA2")
+)
+summary(m46)
+
+m47 = ergm(n ~ edges + mutual + 
+             gwidegree(.5, fixed = TRUE) + 
+             gwodegree(.5, fixed = TRUE) + 
+             gwesp(.5, fixed = TRUE) +
+             nodematch("Ethnicity", diff = FALSE) + 
+             nodematch("ebCommunity", diff = FALSE, keep = 1:2) +
+             nodematch("weight.status.2", diff = TRUE) +
+             nodecov("T1Age") + 
+             absdiff("T1Age") +
+             nodematch("team", diff = FALSE) +
+             nodecov("netSnackChange") +
+             absdiff("netSnackChange") +
+             nodecov("TotalPAChange") +
+             absdiff("TotalPAChange")
+)
+
+m48 = ergm(n ~ edges + mutual + 
+             gwidegree(.5, fixed = TRUE) + 
+             gwodegree(.5, fixed = TRUE) + 
+             gwesp(.5, fixed = TRUE) +
+             nodematch("Ethnicity", diff = FALSE) + 
+             nodematch("ebCommunity", diff = FALSE, keep = 1:2) +
+             nodematch("weight.status.2", diff = TRUE) +
+             nodecov("T1Age") + 
+             absdiff("T1Age") +
+             nodematch("team", diff = FALSE) +
+             nodecov("netSnackChange") +
+             absdiff("netSnackChange") +
+             nodecov("MVPA1") +
+             absdiff("MVPA1") +
+             nodecov("MVPAChange") +
+             absdiff("MVPAChange")
+)
+
+m49 = ergm(n ~ edges + mutual + 
+             gwidegree(.5, fixed = TRUE) + 
+             gwodegree(.5, fixed = TRUE) + 
+             gwesp(.5, fixed = TRUE) +
+             nodematch("Ethnicity", diff = FALSE) + 
+             nodematch("ebCommunity", diff = FALSE, keep = 1:2) +
+             nodematch("weight.status.2", diff = TRUE) +
+             nodecov("T1Age") + 
+             absdiff("T1Age") +
+             nodematch("team", diff = FALSE) +
+             nodecov("netSnackChange") +
+             absdiff("netSnackChange") +
+             nodecov("MVPAChange") +
+             absdiff("MVPAChange")
+)
+
+m50 = ergm(n ~ edges + mutual + 
+             gwidegree(.5, fixed = TRUE) + 
+             gwodegree(.5, fixed = TRUE) + 
+             gwesp(.5, fixed = TRUE) +
+             nodematch("Ethnicity", diff = FALSE) + 
+             nodematch("ebCommunity", diff = FALSE, keep = 1:2) +
+             nodematch("weight.status.2", diff = TRUE) +
+             nodecov("T1Age") + 
+             absdiff("T1Age") +
+             nodematch("team", diff = FALSE) +
+             nodecov("netSnackChange") +
+             absdiff("netSnackChange") +
+             absdiff("MVPAChange")
+)
+
+stargazer(m45, m46, m47, m48, m49, m50, type = "text")
+stargazer(m41, m45, m44, type = "text")
+save.image("models/manyModels.RData")
+
+dd = broom::tidy(m50)[c(1:7, 10:12, 8:9, 13:15), -4]
+dd = mutate(dd, sig = ifelse(p.value < .01, "***",
+                        ifelse(p.value < .05, "**",
+                               ifelse(p.value < .1, "*", ""))))
+knitr::kable(dd, format = "markdown", digits = 3)

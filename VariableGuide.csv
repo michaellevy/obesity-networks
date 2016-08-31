@@ -1,0 +1,25 @@
+Variable,Definition,Format
+Participant,Participant in study?,"0=no, 1=yes"
+Team,Team # within some camp activities,"3, 4, 5, 6"
+Net data,Do I have network data from them?,"0=no, 1=yes"
+bmi percentile,Body Mass Index percentile,numeric continuous
+T1Age,Age at baseline of study,numeric continuous
+Ethnicity,Ethnicity,"Black, Latina"
+weight status 3,Weight status when divided into 3 categories,"Healthy, Overweight, Obese"
+weight status 2,Weight status when divided into 2 categories,"Healthy, Overweight/Obese"
+LightPA1,"Average minutes of ""light"" physical activity per day at Time 1",numeric continuous
+MVPA1,"Average minutes of ""moderate-to-vigorous"" physical activity per day at Time 1",numeric continuous
+TotalPA1,Total minutes of physical activity (all types) per day at Time 1,numeric continuous
+LightPA2,"Average minutes of ""light"" physical activity per day at Time 2",numeric continuous
+MVPA2,"Average minutes of ""moderate-to-vigorous"" physical activity per day at Time 2",numeric continuous
+TotalPA2,Total minutes of physical activity (all types) per day at Time 2,numeric continuous
+LightPAChange,LightPA2 - LightPA1,numeric continuous
+MVPAChange,MVPA2 - MVPA1,numeric continuous
+TotalPAChange,TotalPA2 - TotalPA1,numeric continuous
+fvservt1,Average # of servings of fruits and vegetables per day at Time 1,numeric continuous
+usservt1,Average # of servings of unhealthy snacks per day at Time 1,numeric continuous
+fvservt2,Average # of servings of fruits and vegetables per day at Time 2,numeric continuous
+usservt2,Average # of servings of unhealthy snacks per day at Time 2,numeric continuous
+FVChange,fvservt2 - fvservt1,numeric continuous
+USChange,usservt2 - usservt1,numeric continuous
+component,Which large grouping does participant seem to be a part of?,A or B

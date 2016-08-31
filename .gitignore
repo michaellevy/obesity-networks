@@ -1,9 +1,10 @@
 /data
 /models
 
-# Kim's notes
+# Kim's notes and analyses
 /*.docx
 /*.xlsx
+code/kimsAnalyses.R
 
 # History files
 .Rhistory
@@ -38,3 +39,5 @@ vignettes/*.pdf
 # Temporary files created by R markdown
 *.utf8.md
 *.knit.md
+
+.DS_Store
