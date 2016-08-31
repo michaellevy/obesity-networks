@@ -1,3 +1,10 @@
+/data
+/models
+
+# Kim's notes
+/*.docx
+/*.xlsx
+
 # History files
 .Rhistory
 .Rapp.history
