@@ -52,7 +52,9 @@ ggplot(att, aes(x = bmi.percentile)) +
   geom_density(adjust = .2, fill = "gray") +
   geom_rug(sides = "b", aes(color = weight.status.3),
            data = data.frame(bmi.percentile = att$bmi.percentile + rnorm(nrow(att), 0, .5),
-                             weight.status.3 = att$weight.status.3))
+                             weight.status.3 = att$weight.status.3)) +
+  theme(legend.position = c(0, 1), legend.justification = c(0, 1))
+ggsave("results/BMI-distribution.png", width = 5, height = 4)
 # Looks like the two-class division is reasonable. Overweight/obese divides similar girls.
 
 # Let's try to fit some ERGMs
@@ -448,7 +450,9 @@ ggplot(data.frame(com = n %v% "ebCommunity",
                   age = n %v% "T1Age") %>%
          filter(com < 3), 
        aes(x = as.factor(com), y = age)) + 
-  geom_boxplot(fill = "gray")
+  geom_boxplot(fill = "gray") +
+  xlab("Edge-betweenness commmunity membership")
+ggsave("results/communities-vs-age.png", height = 4, width = 5)
 # To a large extent. Does xIC prefer just age homophily with endo-communities?
 # No: It likes having both. There is overlap of age in the communities and they have separate effects.
 m21.2 = ergm(n ~ edges + mutual + 
@@ -939,8 +943,11 @@ stargazer(m45, m46, m47, m48, m49, m50, type = "text")
 stargazer(m41, m45, m44, type = "text")
 save.image("models/manyModels.RData")
 
+load("models/manyModels.RData")
 dd = broom::tidy(m50)[c(1:7, 10:12, 8:9, 13:15), -4]
 dd = mutate(dd, sig = ifelse(p.value < .01, "***",
                         ifelse(p.value < .05, "**",
                                ifelse(p.value < .1, "*", ""))))
-knitr::kable(dd, format = "markdown", digits = 3)
+
+knitr::knit(text = knitr::kable(dd, format = "html", digits = 3),
+            output = "ergmSummay.html")

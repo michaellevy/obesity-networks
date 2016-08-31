@@ -94,3 +94,11 @@ knitr::knit(text = stargazer(m100, m101, m102, m103, m104,
                              dep.var.caption = "", dep.var.labels.include = FALSE,
                              order = c(1:7, 13, 11, 12, 10, 8, 9, 14:15, 18:19, 16:17, 20)),
             output = "results/ergmTable.html")
+
+# Or just one model
+dd = broom::tidy(m100)[c(1:7, 10:12, 8:9, 13:15), -4]
+dd = mutate(dd, sig = ifelse(p.value < .01, "***",
+                             ifelse(p.value < .05, "**",
+                                    ifelse(p.value < .1, "*", ""))))
+knitr::knit(text = knitr::kable(dd, format = "html", digits = 3),
+            output = "ergmSummay.html")
