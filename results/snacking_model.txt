@@ -1,0 +1,33 @@
+
+Call:
+lnam(y = n %v% "netSnackChange", x = cbind(age = n %v% "T1Age", 
+    friends = degree(n, cmode = "outdegree")), W1 = t(rowNorm(n[, 
+    ])))
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-8.6495 -1.9469  0.1916  1.9082  8.2415 
+
+Coefficients:
+        Estimate Std. Error Z value Pr(>|z|)  
+age     -0.08404    0.08233  -1.021   0.3074  
+friends  0.46449    0.26427   1.758   0.0788 .
+rho1.1  -0.04893    0.23314  -0.210   0.8338  
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+      Estimate Std. Error
+Sigma    3.386      0.151
+
+Goodness-of-Fit:
+	Residual standard error: 3.533 on 35 degrees of freedom (w/o Sigma)
+	Multiple R-Squared: 0.07787, Adjusted R-Squared: -0.001171
+	Model log likelihood: -100.3 on 34 degrees of freedom (w/Sigma)
+	AIC: 208.6 BIC: 215.1 
+
+	Null model: meanstd 
+	Null log likelihood: -101.8 on 36 degrees of freedom
+	AIC: 207.6 BIC: 210.9 
+	AIC difference (model versus null): -0.9019 
+	Heuristic Log Bayes Factor (model versus null):  -4.177 
+

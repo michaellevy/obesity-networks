@@ -1,0 +1,33 @@
+
+Call:
+lnam(y = n %v% "TotalPAChange", x = cbind(age = n %v% "T1Age", 
+    friends = degree(n, cmode = "outdegree")), W1 = t(rowNorm(n[, 
+    ])))
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-195.264  -36.208   -1.185   30.877  217.071 
+
+Coefficients:
+        Estimate Std. Error Z value Pr(>|z|)   
+age       5.8990     2.0673   2.853  0.00432 **
+friends  10.4995     6.2888   1.670  0.09501 . 
+rho1.1   -0.2564     0.2113  -1.213  0.22511   
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+      Estimate Std. Error
+Sigma    78.24      80.89
+
+Goodness-of-Fit:
+	Residual standard error: 80.96 on 35 degrees of freedom (w/o Sigma)
+	Multiple R-Squared: 0.08066, Adjusted R-Squared: 0.001864
+	Model log likelihood: -219.8 on 34 degrees of freedom (w/Sigma)
+	AIC: 447.5 BIC: 454.1 
+
+	Null model: meanstd 
+	Null log likelihood: -220.8 on 36 degrees of freedom
+	AIC: 445.6 BIC: 448.9 
+	AIC difference (model versus null): -1.905 
+	Heuristic Log Bayes Factor (model versus null):  -5.181 
+
