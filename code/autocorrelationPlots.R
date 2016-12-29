@@ -1,3 +1,7 @@
+title1 = "Total Physical Activity Change"
+title2 = "Overall Snack Quality Change"
+titleSize = 2
+
 library(sna)
 library(numDeriv)
 library(tidyverse)
@@ -35,7 +39,7 @@ x = -17; y = -2
 par(mfrow = 1:2, mar = c(1, 1, 2.5, 1), xpd = NA)
 set.seed(324)
 co = plot(n, vertex.cex = 2, vertex.col = paCols$plot)
-mtext("Total Physical Activity Change", cex = 2)
+mtext(title1, cex = titleSize)
 legend(x = x, y = y, 
        legend = rev(c(paste0("Minimum: ", round(min(n %v% "TotalPAChange"), 0)),
                       "No change",
@@ -44,7 +48,7 @@ legend(x = x, y = y,
        title = "Activity Change")
 
 plot(n, vertex.cex = 2, vertex.col = snackCols$plot, coord = co)
-mtext("Overall Snack Quality Change", cex = 2)
+mtext(title2, cex = titleSize)
 legend(x = x, y = y, 
        legend = rev(c(paste0("Minimum: ", round(min(n %v% "netSnackChange"), 0)),
                       "No change",
